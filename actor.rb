@@ -6,6 +6,11 @@ class Actor
     @cash = 100
     @hand = []
   end
+
+  def make_turn
+      
+  end
+ 
 end
 
 class Dealer < Actor
