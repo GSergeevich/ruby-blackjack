@@ -1,10 +1,17 @@
 require_relative 'game'
 
-game=Game.new
-game.deck.steer!
-game.handover('player',2)
-game.handover('dealer',2)
-#binding pry
-game.bet(10)
-game.draw_state
-game.make_turn('player')
+loop do 
+  puts "21"
+  game=Game.new
+  puts <<~INPUT 
+     1)Сыграть ещё раз
+     2)Выход
+  INPUT
+  input = gets.chomp
+  case input
+  when '1'
+    next
+  else
+    exit
+  end
+end
