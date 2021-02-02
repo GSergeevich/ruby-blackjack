@@ -21,9 +21,13 @@ private
     SUITS.each do |suit|
       VALUES.each.with_index(2) do |value,index|
         if value.class == Array
-          value.each {|value| @deck << {suit: suit, value: value, score: index} }  
+          value.each {|value| @deck << {suit: suit, value: value, score: [index]} }  
         else        
-          @deck << {suit: suit, value: value, score: index} 
+          if value == "A"
+            @deck << {suit: suit, value: value, score: [index, 1]} 
+          else 
+            @deck << {suit: suit, value: value, score: [index]} 
+          end
         end
       end
     end

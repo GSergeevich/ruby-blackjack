@@ -1,5 +1,6 @@
 require_relative 'actor'
 require_relative 'deck'
+require_relative 'errors'
 require 'pry'
 
 class Game
@@ -27,17 +28,29 @@ class Game
   end
 
   def end_game
-    p "end game"
-    exit 
+    puts <<~INPUT 
+      1)Сыграть ещё раз
+      2)Выход
+    INPUT
+    input = gets.chomp
+    case input
+    when '1'
+      start_game
+    else
+      exit
+    end
   end
 
   def draw_state(*args)
+    system "clear"
+    puts @message
     player_hand = @player.hand.map {|card| card[:value].to_s + card[:suit]}
     dealer_hand = args.empty? ? @dealer.hand.map {'* '} : @dealer.hand.map {|card| card[:value].to_s + card[:suit]}
     dealer_score = args.empty? ? "*" : @dealer.score 
     puts "#{@player.name}: #{player_hand} Score: #{@player.score} Cash: #{@player.cash}" 
     puts "Dealer: #{dealer_hand} Score: #{dealer_score} Cash: #{@dealer.cash}" 
     puts "Bank: #{@bank}"
+    puts "--------"
   end
   
   def player_init
@@ -51,10 +64,9 @@ class Game
   end  
 
   def make_turn(actor)
+    @message = "Ход делает #{actor}"
     draw_state
-    p actor
     @player.hand.length == 3 && @dealer.hand.length == 3 ? show_cards : true
-    @player.score == 3 && @dealer.hand.length == 3 ? show_cards : true
     if actor == 'player'
       TURN_OPTIONS.each.with_index(1) {|value,index| puts "#{index}) #{value[:description]}" }
       input = gets.chomp
@@ -62,7 +74,7 @@ class Game
       when '1'
         pass_turn(actor)
       when '2'
-        eval("@#{actor}.hand.length") == 2 ? (handover(actor,1);pass_turn(actor)) : (puts "У вас должно быть две карты"; pass_turn(actor))
+        eval("@#{actor}.hand.length") == 2 ? (handover(actor,1);pass_turn(actor)) : (@message= "У вас должно быть две карты"; pass_turn(actor))
       when '3'
         show_cards
       end
@@ -79,17 +91,29 @@ class Game
   def show_cards
     payout(choose_winner) 
     draw_state(1)
+    @player.hand = []
+    @dealer.hand = []
     end_game
   end
-  
+ 
+  def not_bust?(number)
+    number <= 21 ? number : 0
+  end
+ 
   def choose_winner
-    @player.score > @dealer.score ? 'player' : 'dealer' 
+    if @player.score != @dealer.score
+      not_bust?(@player.score) > not_bust?(@dealer.score) ? 'player' : 'dealer' 
+    else 
+      @message = "Ничья!"
+      false
+    end
+    
   end
   
   def handover(actor,number)
     eval("@#{actor}.hand.concat(@deck.deck.pop(#{number}))")
-    eval("@#{actor}.score = @#{actor}.hand.reduce(0) {|m,card| card[:score] + m }") 
-    eval("@#{actor}.score") > 21 ? (puts "Перебор!"; show_cards) : true
+    eval("@#{actor}.score = @#{actor}.hand.reduce(0) {|m,card| not_bust?(card[:score].max + m) ? card[:score].max + m : card[:score].min + m }") 
+    eval("@#{actor}.score") > 21 ? (@message = "Перебор у #{actor}!"; show_cards) : true
   end
   
   def bet(actor,number)
@@ -98,7 +122,16 @@ class Game
   end
   
   def payout(actor)
-    eval("@#{actor}.cash += @bank")
+    if actor
+      eval("@#{actor}.cash += @bank")
+      @bank = 0
+    else 
+      pay = (@bank / 2)
+      puts "PAY #{pay}"
+      @dealer.cash += pay  
+      @player.cash += pay  
+      @bank = 0
+    end
   end
 
 end
