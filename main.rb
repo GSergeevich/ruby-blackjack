@@ -1,6 +1,6 @@
 require_relative 'game'
 
 loop do 
-  puts "21"
-  game=Game.new
+  puts "Играем в 21"
+  Game.new
 end
