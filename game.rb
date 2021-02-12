@@ -4,10 +4,6 @@ require_relative 'interface'
 
 class Game
 
-  TURN_OPTIONS = [{ description: 'Пропустить ход', method: 'pass_turn' },
-                  { description: 'Ещё карту', method: 'handover' },
-                  { description: 'Открыть карты', method: 'show_cards' }].freeze
-
   attr_accessor :bank, :deck, :player, :dealer, :message
 
   def initialize
@@ -54,8 +50,7 @@ class Game
     @interface.draw_state(self)
     @player.hand.length == 3 && @dealer.hand.length == 3 ? show_cards : true
     if actor == 'player'
-      TURN_OPTIONS.each.with_index(1) { |value, index| puts "#{index}) #{value[:description]}" }
-      input = gets.chomp
+      input = @interface.draw_turn_options
       case input
       when '1'
         pass_turn(actor)

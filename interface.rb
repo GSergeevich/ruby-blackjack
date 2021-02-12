@@ -1,7 +1,17 @@
 class Interface
+
+  TURN_OPTIONS = [{ description: 'Пропустить ход', method: 'pass_turn' },
+                  { description: 'Ещё карту', method: 'handover' },
+                  { description: 'Открыть карты', method: 'show_cards' }].freeze
+
   def draw_init
     puts 'Добро пожаловать в игру!Как ваше имя?'
     gets.chomp
+  end
+  
+  def draw_turn_options
+    TURN_OPTIONS.each.with_index(1) { |value, index| puts "#{index}) #{value[:description]}" }
+    gets.chomp   
   end
 
   def draw_state(game)
